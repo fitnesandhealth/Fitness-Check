@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Metrics Tracker - Health, Time & Society</title>
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+            --danger: #e74c3c;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: var(--dark);
+        }
+        h1 {
+            color: var(--dark);
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+        }
+        .calculator {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            border-left: 5px solid var(--primary);
+            transition: transform 0.3s;
+        }
+        .calculator:hover {
+            transform: translateY(-3px);
+        }
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            margin-top: 10px;
+            width: 100%;
+        }
+        button:hover {
+            background: #2980b9;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        input {
+            padding: 12px;
+            margin: 10px 0;
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(52,152,219,0.2);
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: var(--light);
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary);
+        }
+        .result-title {
+            color: var(--primary);
+            margin-top: 0;
+        }
+        .metric {
+            font-size: 1.1em;
+            margin: 8px 0;
+        }
+        .highlight {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 1.2em;
+        }
+        .error {
+            color: var(--danger);
+            font-weight: normal;
+            background: #fde8e8;
+            padding: 10px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .timeline-event {
+            margin-bottom: 10px;
+            padding-left: 15px;
+            border-left: 3px solid var(--primary);
+        }
+        .event-year {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+            .calculator {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Your Life Metrics Tracker</h1>
+    <p style="text-align: center; color: #7f8c8d;">Discover your health stats, time alive, and how society changed in your lifetime</p>
+
+    <!-- Days Alive Calculator -->
+    <div class="calculator">
+        <h2>📅 Days Alive Calculator</h2>
+        <p>Enter your birthdate:</p>
+        <input type="date" id="birthdate" max="2025-12-31">
+        <button onclick="calculateDays()">Calculate My Time Alive</button>
+        <div id="daysResult" class="result">
+            <h3 class="result-title">Your Time on Earth</h3>
+            <div id="daysOutput"></div>
+        </div>
+    </div>
+
+    <!-- Heartbeat Calculator -->
+    <div class="calculator">
+        <h2>❤️ Heartbeat Calculator</h2>
+        <p>Enter your age:</p>
+        <input type="number" id="age" placeholder="Your age in years" min="1" max="120">
+        <button onclick="calculateHeartbeats()">Calculate My Heartbeats</button>
+        <div id="heartResult" class="result">
+            <h3 class="result-title">Your Heart Statistics</h3>
+            <div id="heartOutput"></div>
+        </div>
+    </div>
+
+    <!-- Breathing Calculator -->
+    <div class="calculator">
+        <h2>🌬️ Breathing Calculator</h2>
+        <p>Enter your age:</p>
+        <input type="number" id="breathAge" placeholder="Your age in years" min="1" max="120">
+        <button onclick="calculateBreaths()">Calculate My Breaths</button>
+        <div id="breathResult" class="result">
+            <h3 class="result-title">Your Breathing Statistics</h3>
+            <div id="breathOutput"></div>
+        </div>
+    </div>
+
+    <!-- Society Changes Timeline -->
+    <div class="calculator">
+        <h2>🌍 Society Timeline Since Your Birth</h2>
+        <p>Enter your birth year:</p>
+        <input type="number" id="birthYear" placeholder="Example: 1990" min="1900" max="2025">
+        <button onclick="showTimeline()">Show Social Changes</button>
+        <div id="timelineResult" class="result">
+            <h3 class="result-title">World Changes During Your Lifetime</h3>
+            <div id="timelineOutput"></div>
+        </div>
+    </div>
+
+    <script>
+        // Input validation function
+        function validateInput(input, min, max) {
+            const value = parseInt(input.value);
+            if (isNaN(value) || value < min || value > max) {
+                input.style.borderColor = "var(--danger)";
+                return false;
+            }
+            input.style.borderColor = "#ddd";
+            return true;
+        }
+
+        // Days Alive Calculator
+        function calculateDays() {
+            const birthdateInput = document.getElementById("birthdate");
+            const birthdate = new Date(birthdateInput.value);
+            const today = new Date();
+            
+            if (!birthdateInput.value) {
+                document.getElementById("daysOutput").innerHTML = 
+                    `<p class="error">Please enter a valid date</p>`;
+                return;
+            }
+            
+            if (birthdate > today) {
+                document.getElementById("daysOutput").innerHTML = 
+                    `<p class="error">Birthdate cannot be in the future</p>`;
+                return;
+            }
+            
+            const daysAlive = Math.floor((today - birthdate) / (1000 * 60 * 60 * 24));
+            const years = Math.floor(daysAlive / 365);
+            const months = Math.floor((daysAlive % 365) / 30);
+            const weeks = Math.floor(daysAlive / 7);
+            const hours = daysAlive * 24;
+            const minutes = hours * 60;
+            
+            document.getElementById("daysOutput").innerHTML = `
+                <p class="metric">You've been alive for: <span class="highlight">${daysAlive.toLocaleString()} days</span></p>
+                <p class="metric">That's about: <span class="highlight">${years} years</span> and <span class="highlight">${months} months</span></p>
+                <p class="metric">Or approximately: <span class="highlight">${weeks.toLocaleString()} weeks</span></p>
+                <p class="metric">Which equals: <span class="highlight">${hours.toLocaleString()} hours</span> or <span class="highlight">${minutes.toLocaleString()} minutes</span></p>
+            `;
+        }
+
+        // Heartbeat Calculator (avg 70 bpm)
+        function calculateHeartbeats() {
+            const ageInput = document.getElementById("age");
+            if (!validateInput(ageInput, 1, 120)) {
+                document.getElementById("heartOutput").innerHTML = 
+                    `<p class="error">Please enter a valid age (1-120)</p>`;
+                return;
+            }
+            
+            const age = parseInt(ageInput.value);
+            const heartbeats = age * 365 * 24 * 60 * 70;
+            const heartbeatsPerDay = 70 * 60 * 24;
+            const heartbeatsPerYear = heartbeatsPerDay * 365;
+            
+            document.getElementById("heartOutput").innerHTML = `
+                <p class="metric">Your heart has beaten approximately: <span class="highlight">${heartbeats.toLocaleString()} times</span></p>
+                <p class="metric">That's about <span class="highlight">${heartbeatsPerDay.toLocaleString()} beats per day</span></p>
+                <p class="metric">Or <span class="highlight">${heartbeatsPerYear.toLocaleString()} beats per year</span></p>
+                <p class="metric">At rest, your heart pumps about <span class="highlight">7,200 liters of blood daily</span></p>
+            `;
+        }
+
+        // Breathing Calculator (avg 15 breaths/min)
+        function calculateBreaths() {
+            const ageInput = document.getElementById("breathAge");
+            if (!validateInput(ageInput, 1, 120)) {
+                document.getElementById("breathOutput").innerHTML = 
+                    `<p class="error">Please enter a valid age (1-120)</p>`;
+                return;
+            }
+            
+            const age = parseInt(ageInput.value);
+            const breaths = age * 365 * 24 * 60 * 15;
+            const breathsPerDay = 15 * 60 * 24;
+            const breathsPerYear = breathsPerDay * 365;
+            const totalAir = Math.round((breaths * 0.5) / 1000); // approx 0.5L per breath in liters
+            
+            document.getElementById("breathOutput").innerHTML = `
+                <p class="metric">You've taken about: <span class="highlight">${breaths.toLocaleString()} breaths</span></p>
+                <p class="metric">That's roughly <span class="highlight">${breathsPerDay.toLocaleString()} breaths daily</span></p>
+                <p class="metric">Or <span class="highlight">${breathsPerYear.toLocaleString()} breaths per year</span></p>
+                <p class="metric">You've inhaled approximately <span class="highlight">${totalAir.toLocaleString()} thousand liters of air</span></p>
+            `;
+        }
+
+        // Society Changes Timeline (Updated through 2025)
+        function showTimeline() {
+            const birthYearInput = document.getElementById("birthYear");
+            if (!validateInput(birthYearInput, 1900, 2025)) {
+                document.getElementById("timelineOutput").innerHTML = 
+                    `<p class="error">Please enter a year between 1900-2025</p>`;
+                return;
+            }
+            
+            const birthYear = parseInt(birthYearInput.value);
+            const currentYear = new Date().getFullYear();
+            const events = [
+                {year: 1990, event: "World Wide Web invented by Tim Berners-Lee"},
+                {year: 1995, event: "Amazon and eBay revolutionize online shopping"},
+                {year: 1997, event: "First Harry Potter book published"},
+                {year: 2001, event: "9/11 attacks change global security"},
+                {year: 2004, event: "Facebook launches at Harvard"},
+                {year: 2007, event: "iPhone introduces smartphone era"},
+                {year: 2010, event: "Instagram and Pinterest founded"},
+                {year: 2012, event: "NASA's Curiosity rover lands on Mars"},
+                {year: 2016, event: "Pokémon GO creates AR gaming craze"},
+                {year: 2020, event: "COVID-19 pandemic begins, changing work culture"},
+                {year: 2022, event: "ChatGPT launches AI revolution"},
+                {year: 2023, event: "Threads launched as Twitter competitor"},
+                {year: 2024, event: "AI video generation becomes mainstream"},
+                {year: 2025, event: "Quantum computing makes commercial breakthroughs"}
+            ];
+            
+            let timelineHTML = '';
+            const userEvents = events.filter(event => event.year >= birthYear);
+            
+            if (userEvents.length === 0) {
+                timelineHTML = `<p>You were born before most modern technology! Here's what happened after ${birthYear}:</p>`;
+                events.slice(0, 5).forEach(item => {
+                    timelineHTML += `
+                        <div class="timeline-event">
+                            <span class="event-year">${item.year}:</span> ${item.event}
+                        </div>
+                    `;
+                });
+            } else {
+                timelineHTML = `<p>Major changes during your lifetime (${birthYear}-${currentYear}):</p>`;
+                userEvents.forEach(item => {
+                    timelineHTML += `
+                        <div class="timeline-event">
+                            <span class="event-year">${item.year}:</span> ${item.event}
+                        </div>
+                    `;
+                });
+            }
+            
+            document.getElementById("timelineOutput").innerHTML = timelineHTML;
+        }
+    </script>
+
+    <footer>
+        <p>Life Metrics Tracker &copy; 2025 | All calculations are estimates</p>
+    </footer>
+</body>
+</html>
